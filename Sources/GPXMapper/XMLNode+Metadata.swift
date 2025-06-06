@@ -9,7 +9,7 @@ extension XMLNode {
     func mapMetadata() throws -> Metadata {
         try requireTag("metadata")
 
-        let time = try self.firstChild(tag: "time")?.mapValueElement(tag: "time")
+        let time = try firstChild(tag: "time")?.mapValueElement(tag: "time")
 
         return Metadata(time: time, namespacePrefix: namespacePrefix)
     }

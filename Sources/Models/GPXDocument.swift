@@ -14,6 +14,8 @@ struct GPXDocument: XMLTagElement {
     // <xsd:attribute name="version" type="xsd:string" use="required" fixed="1.1"/>
     var version: GpxVersion = .v1_1
 
+    var allAdditionnalAttributes: [String: String] = [:]
+
     // MARK: - Elements
 
     // <xsd:element name="metadata" type="metadataType" minOccurs="0"/>
@@ -34,7 +36,7 @@ struct GPXDocument: XMLTagElement {
         [
             "creator": creator,
             "version": version.rawValue,
-        ]
+        ].merging(allAdditionnalAttributes) { _, new in new }
     }
 
     var elementName: String = "gpx"
