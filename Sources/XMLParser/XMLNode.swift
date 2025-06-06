@@ -8,12 +8,18 @@
 import Foundation
 
 class XMLNode: CustomStringConvertible {
-    var tag = ""
+    var namespacePrefix: String?
+    var tag: String
     var attributes = [String: String]()
     var content = ""
     var children = [XMLNode]()
     
-    init(tag: String = "", attributes: [String: String] = [:], content: String = "", children: [XMLNode] = []) {
+    init(namespacePrefix: String? = nil,
+         tag: String,
+         attributes: [String: String] = [:],
+         content: String = "",
+         children: [XMLNode] = []) {
+        self.namespacePrefix = namespacePrefix
         self.tag = tag
         self.attributes = attributes
         self.content = content
@@ -27,17 +33,32 @@ class XMLNode: CustomStringConvertible {
         .joined()
     }
     
+    private var completeElementName: String {
+        if let namespacePrefix {
+            return "\(namespacePrefix):\(tag)"
+        }
+        return tag
+    }
+    
+    private var openTag: String {
+        return "<\(completeElementName)\(attString)>"
+    }
+    
+    private var closeTag: String {
+        "</\(completeElementName)>"
+    }
+    
     var description: String {
         if !content.isEmpty {
-            return "<\(tag)\(attString)>\(content)</\(tag)>\n"
+            return "\(openTag)\(content)\(closeTag)\n"
         }
         
         if !children.isEmpty {
-            return "<\(tag)\(attString)>\n" +
+            return "\(openTag)\n" +
                 children.map { $0.description }.joined(separator: "") +
-                "</\(tag)>\n"
+                "\(closeTag)\n"
         }
         
-        return "<\(tag)\(attString) />\n"
+        return "<\(completeElementName)\(attString) />\n"
     }
 }

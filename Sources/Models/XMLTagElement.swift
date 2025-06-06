@@ -14,8 +14,6 @@ protocol XMLTagElement: CustomStringConvertible {
     var elementName: String { get }
     /// Namespace prefix, if any
     var namespacePrefix: String? { get }
-    /// Namespace URI, if any
-    var namespaceURI: String? { get }
 
     /// Text content if the element contains only a simple value
     var content: String? { get }

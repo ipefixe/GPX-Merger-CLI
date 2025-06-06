@@ -27,7 +27,12 @@ class XMLBuilder: NSObject, XMLParserDelegate {
         namespaceURI: String?,
         qualifiedName qName: String?,
         attributes attributeDict: [String: String] = [:]) {
-        let newElement = XMLNode(tag: elementName, attributes: attributeDict)
+        let (namespacePrefix, tagName) = extractNamespacePrefixAndTagName(from: elementName)
+        let newElement = XMLNode(
+            namespacePrefix: namespacePrefix,
+            tag: tagName,
+            attributes: attributeDict
+        )
         if let parent = stack.last {
             parent.children.append(newElement)
         }
@@ -59,5 +64,16 @@ class XMLBuilder: NSObject, XMLParserDelegate {
     
     func parser(_ parser: XMLParser, validationErrorOccurred validationError: any Error) {
         print("❌ \(validationError)")
+    }
+}
+
+extension XMLBuilder {
+    private func extractNamespacePrefixAndTagName(from elementName: String) -> (String?, String) {
+        let parts = elementName.split(separator: ":")
+        if parts.count == 2 {
+            return ("\(parts.first ?? "")", "\(parts.last ?? "")")
+        }
+            
+        return (nil, elementName)
     }
 }

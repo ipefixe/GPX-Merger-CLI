@@ -22,17 +22,15 @@ struct Metadata: XMLTagElement {
     // <xsd:element name="extensions" type="extensionsType" minOccurs="0"/>
 
     // MARK: - XMLTagElement
-    
+
     var attributes: [String: String] = [:]
-    
+
     var elementName: String = "metadata"
-    
+
     var namespacePrefix: String?
-    
-    var namespaceURI: String?
-    
+
     var content: String?
-    
+
     var children: [any XMLTagElement] {
         [
             time

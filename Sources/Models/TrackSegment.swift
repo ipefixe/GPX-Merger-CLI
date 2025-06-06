@@ -16,17 +16,15 @@ struct TrackSegment: XMLTagElement {
     var extensions: Extensions?
 
     // MARK: - XMLTagElement
-    
+
     var attributes: [String: String] = [:]
-    
+
     var elementName: String = "trkseg"
-    
+
     var namespacePrefix: String?
-    
-    var namespaceURI: String?
-    
+
     var content: String?
-    
+
     var children: [any XMLTagElement] {
         [
             extensions

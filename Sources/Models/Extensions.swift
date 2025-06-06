@@ -20,8 +20,6 @@ struct Extensions: XMLTagElement {
 
     var namespacePrefix: String?
 
-    var namespaceURI: String?
-
     var content: String?
 
     var children: [any XMLTagElement] {

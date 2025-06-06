@@ -34,9 +34,7 @@ struct Track: XMLTagElement {
     var elementName: String = "trk"
     
     var namespacePrefix: String?
-    
-    var namespaceURI: String?
-    
+        
     var content: String?
     
     var children: [any XMLTagElement] {

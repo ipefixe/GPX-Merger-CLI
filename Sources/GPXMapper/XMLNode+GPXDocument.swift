@@ -37,7 +37,11 @@ extension XMLNode {
     func mapValueElement(tag: String) throws -> ValueElement {
         try requireTag(tag)
 
-        return ValueElement(elementName: tag, content: content)
+        return ValueElement(
+            elementName: tag,
+            namespacePrefix: namespacePrefix,
+            content: content
+        )
     }
 }
 
@@ -47,7 +51,7 @@ extension XMLNode {
 
         let time = try self.firstChild(tag: "time")?.mapValueElement(tag: "time")
 
-        return Metadata(time: time)
+        return Metadata(time: time, namespacePrefix: namespacePrefix)
     }
 }
 
@@ -60,7 +64,12 @@ extension XMLNode {
         let trackSegments = try children(tag: "trkseg").compactMap { try $0.mapTrackSegment() }
         let extensions = try firstChild(tag: "extensions")?.mapExtensions()
 
-        return Track(name: name, type: type, trackSegments: trackSegments, extensions: extensions)
+        return Track(
+            name: name,
+            type: type,
+            trackSegments: trackSegments,
+            extensions: extensions,
+            namespacePrefix: namespacePrefix)
     }
 }
 
@@ -71,7 +80,10 @@ extension XMLNode {
         let trackPoints = try children(tag: "trkpt").compactMap { try $0.mapTrackPoint() }
         let extensions = try firstChild(tag: "extensions")?.mapExtensions()
 
-        return TrackSegment(trackPoints: trackPoints, extensions: extensions)
+        return TrackSegment(
+            trackPoints: trackPoints,
+            extensions: extensions,
+            namespacePrefix: namespacePrefix)
     }
 }
 
@@ -93,7 +105,8 @@ extension XMLNode {
             longitude: longitude,
             elevation: elevation,
             time: time,
-            extensions: extensions
+            extensions: extensions,
+            namespacePrefix: namespacePrefix
         )
     }
 }
@@ -102,18 +115,18 @@ extension XMLNode {
     func mapExtensions() throws -> Extensions {
         try requireTag("extensions")
 
-        let trackPointExtension = try firstChild(tag: "gpxtpx:TrackPointExtension")?.mapTrackPointExtension()
+        let trackPointExtension = try firstChild(tag: "TrackPointExtension")?.mapTrackPointExtension()
 
-        return Extensions(trackPointExtension: trackPointExtension)
+        return Extensions(trackPointExtension: trackPointExtension, namespacePrefix: namespacePrefix)
     }
 }
 
 extension XMLNode {
     func mapTrackPointExtension() throws -> TrackPointExtension {
-        try requireTag("gpxtpx:TrackPointExtension")
+        try requireTag("TrackPointExtension")
 
-        let heartRate = try firstChild(tag: "gpxtpx:hr")?.mapValueElement(tag: "gpxtpx:hr")
+        let heartRate = try firstChild(tag: "hr")?.mapValueElement(tag: "hr")
 
-        return TrackPointExtension(heartRate: heartRate)
+        return TrackPointExtension(heartRate: heartRate, namespacePrefix: namespacePrefix)
     }
 }

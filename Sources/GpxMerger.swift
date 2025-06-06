@@ -98,6 +98,6 @@ struct GpxMerger: ParsableCommand {
         print("🏁\n\(xmlBuilder.root?.description ?? "⚠️ FAILED")")
 
         let gpx = try xmlBuilder.root?.mapGPXDocument()
-        print(gpx?.description)
+        print("\(gpx?.description ?? "⚠️ FAILED")")
     }
 }
