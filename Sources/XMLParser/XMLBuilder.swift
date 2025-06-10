@@ -12,21 +12,18 @@ class XMLBuilder: NSObject, XMLParserDelegate {
     var root: XMLNode?
     
     func parserDidStartDocument(_ parser: XMLParser) {
-        print("[\(parser.hash)] ⚪️ Start of the document")
-        print("[\(parser.hash)] Line number: \(parser.lineNumber)")
+        // print("[\(parser.hash)] ⚪️ Start of the document")
     }
     
     func parserDidEndDocument(_ parser: XMLParser) {
-        print("[\(parser.hash)] ⚫️ End of the document")
-        print("[\(parser.hash)] Line number: \(parser.lineNumber)")
+        // print("[\(parser.hash)] ⚫️ End of the document")
     }
     
-    func parser(
-        _ parser: XMLParser,
-        didStartElement elementName: String,
-        namespaceURI: String?,
-        qualifiedName qName: String?,
-        attributes attributeDict: [String: String] = [:]) {
+    func parser(_ parser: XMLParser,
+                didStartElement elementName: String,
+                namespaceURI: String?,
+                qualifiedName qName: String?,
+                attributes attributeDict: [String: String] = [:]) {
         let (namespacePrefix, tagName) = extractNamespacePrefixAndTagName(from: elementName)
         let newElement = XMLNode(
             namespacePrefix: namespacePrefix,
@@ -39,11 +36,10 @@ class XMLBuilder: NSObject, XMLParserDelegate {
         stack.append(newElement)
     }
     
-    func parser(
-        _ parser: XMLParser,
-        didEndElement elementName: String,
-        namespaceURI: String?,
-        qualifiedName qName: String?) {
+    func parser(_ parser: XMLParser,
+                didEndElement elementName: String,
+                namespaceURI: String?,
+                qualifiedName qName: String?) {
         let last = stack.popLast()
         if stack.isEmpty {
             root = last

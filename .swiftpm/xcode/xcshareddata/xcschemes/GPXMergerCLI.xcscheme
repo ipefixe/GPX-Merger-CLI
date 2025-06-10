@@ -52,11 +52,19 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "test1.gpx"
+            argument = "/Users/ipefixe/Desktop/gpx2.gpx"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "test2.gpx"
+            argument = "/Users/ipefixe/Desktop/gpx3.gpx"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/ipefixe/Desktop/gpx1.gpx"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-o /Users/ipefixe/Desktop/gpxOutput.gpx"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

@@ -11,93 +11,161 @@ import Foundation
 
 @main
 struct GpxMerger: ParsableCommand {
+    // MARK: Error
+
+    private enum MergerError: LocalizedError {
+        case invalidURLs([String])
+        case readingGPX(Error)
+        case nothingToMerger
+        case oneFileToMerge
+
+        var errorDescription: String? {
+            return switch self {
+            case .invalidURLs(let paths):
+                "Some paths could not be resolved to URLs: \(paths.joined(separator: ", "))"
+            case .readingGPX(let error):
+                "Error reading GPX files: \(error.localizedDescription)"
+            case .nothingToMerger:
+                "Nothing to merge"
+            case .oneFileToMerge:
+                "Only one file to merge, nothing to merge"
+            }
+        }
+    }
+
+    // MARK: Command
+
     static let configuration = CommandConfiguration(abstract: "Will merge two GPX files into a new one")
 
-    @Argument(help: "Path to the first GPX file")
-    var firstGPXPath: String
-
-    @Argument(help: "Path to the second GPX file")
-    var secondGPXPath: String
+    @Argument(help: "Paths to GPX files to merge")
+    var paths: [String]
 
     @Option(name: [.short, .customLong("output")], help: "Path to output GPX file")
     var outputGPXPath: String? = nil
 
-    mutating func run() throws {
-        Figlet.say("GPX Merger")
+    // MARK: Private properties
 
-        outputGPXPath = outputGPXPath ?? firstGPXPath
+    private var timestamp: String {
+        return "\(Int(Date.timeIntervalBetween1970AndReferenceDate))"
+    }
+
+    private var outputPath: String {
+        outputGPXPath ?? "~/Desktop/\(timestamp).gpx"
             .replacingOccurrences(
                 of: ".gpx",
                 with: ".merged.gpx",
                 options: [.caseInsensitive, .anchored, .backwards]
             )
+    }
 
-        print("First GPX path = \(firstGPXPath)")
-        print("Second GPX path = \(secondGPXPath)")
-        print("Output path = \(outputGPXPath ?? "---")")
+    // MARK: RUN
 
-        // TODO: ERROR case if outputGPXPath == firstGPXPath
+    mutating func run() throws {
+        Figlet.say("GPX Merger")
 
-        // Sample from my Strava account
-        let gpxString = """
-        <?xml version="1.0" encoding="UTF-8"?>
-        <gpx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd" creator="StravaGPX" version="1.1" xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3">
-         <metadata>
-          <time>2025-05-27T06:48:01Z</time>
-         </metadata>
-         <trk>
-          <name>Sortie en vélo électrique le matin</name>
-          <type>ebikeride</type>
-          <trkseg>
-           <trkpt lat="43.5881200" lon="1.4481640">
-            <ele>145.2</ele>
-            <time>2025-05-27T06:48:01Z</time>
-            <extensions>
-             <gpxtpx:TrackPointExtension>
-              <gpxtpx:hr>118</gpxtpx:hr>
-             </gpxtpx:TrackPointExtension>
-            </extensions>
-           </trkpt>
-           <trkpt lat="43.5881190" lon="1.4481600">
-            <ele>145.2</ele>
-            <time>2025-05-27T06:48:02Z</time>
-            <extensions>
-             <gpxtpx:TrackPointExtension>
-              <gpxtpx:hr>118</gpxtpx:hr>
-             </gpxtpx:TrackPointExtension>
-            </extensions>
-           </trkpt>
-           <trkpt lat="43.5881320" lon="1.4481810">
-            <ele>145.2</ele>
-            <time>2025-05-27T06:48:03Z</time>
-            <extensions>
-             <gpxtpx:TrackPointExtension>
-              <gpxtpx:hr>117</gpxtpx:hr>
-             </gpxtpx:TrackPointExtension>
-            </extensions>
-           </trkpt>
-          </trkseg>
-         </trk>
-        </gpx>
-        """
+        var data: [Data] = []
+        do {
+            data = try readData(from: paths)
+        } catch {
+            print("❌ \(error.localizedDescription). Exiting...")
+            return
+        }
+
+        var gpxDocuments: [GPXDocument] = []
+        do {
+            gpxDocuments = try data.compactMap { try parse(gpxData: $0) }
+        } catch {
+            print("❌ Error while parsing GPX. \(error.localizedDescription). Exiting...")
+            return
+        }
+
+        let gpxDocumentsOrdered = sortedGPX(gpxDocuments: gpxDocuments)
+
+        var gpxMerged: GPXDocument?
+        do {
+            gpxMerged = try merged(gpxDocuments: gpxDocumentsOrdered)
+        } catch {
+            print("❌ \(error.localizedDescription). Exiting...")
+            return
+        }
+
+        guard let gpxMerged else {
+            print("")
+            return
+        }
+
+        try write(gpxDocument: gpxMerged, to: outputPath)
+
+        print("✅ FINISHED")
+    }
+
+    // MARK: Private methods
+
+    private func readData(from paths: [String]) throws -> [Data] {
+        print("Read data from GPX files...")
+
+        let urls = paths.compactMap { URL(string: "file://\($0)") }
+        if urls.count != paths.count {
+            throw MergerError.invalidURLs(paths)
+        }
+
+        do {
+            return try urls.compactMap { try Data(contentsOf: $0) }
+        } catch {
+            throw MergerError.readingGPX(error)
+        }
+    }
+
+    private func parse(gpxData: Data) throws -> GPXDocument? {
+        print("Parse GPX data...")
 
         let xmlBuilder = XMLBuilder()
 
-        // Get a Data from GPX
-        let gpxData = Data(gpxString.utf8)
-
-        // Get a parser from these Data
         let xmlParser = XMLParser(data: gpxData)
 
-        // Set the delegate
         xmlParser.delegate = xmlBuilder
 
-        // Parse
-        print("=== \(xmlParser.hash)")
         xmlParser.parse()
-        print("🏁\n\(xmlBuilder.root?.description ?? "⚠️ FAILED")")
 
-        let gpx = try xmlBuilder.root?.mapGPXDocument()
-        print("\(gpx?.description ?? "⚠️ FAILED")")
+        return try xmlBuilder.root?.mapGPXDocument()
+    }
+
+    private func sortedGPX(gpxDocuments: [GPXDocument]) -> [GPXDocument] {
+        gpxDocuments.sorted {
+            guard let date0 = $0.metadata?.time?.content?.date,
+                  let date1 = $1.metadata?.time?.content?.date else {
+                return true
+            }
+            return date0 < date1
+        }
+    }
+
+    private func merged(gpxDocuments: [GPXDocument]) throws -> GPXDocument {
+        print("Merge GPX documents...")
+
+        guard var gpxMerged = gpxDocuments.first else {
+            throw MergerError.nothingToMerger
+        }
+
+        let gpxToMerge = gpxDocuments.dropFirst()
+        if gpxToMerge.count <= 1 {
+            throw MergerError.oneFileToMerge
+        }
+
+        let tracks = gpxToMerge.compactMap { $0.tracks }
+
+        gpxMerged.tracks.append(contentsOf: tracks.flatMap { $0 })
+
+        return gpxMerged
+    }
+
+    private func write(gpxDocument: GPXDocument, to outputPath: String) throws {
+        print("Write merged GPX to file \(outputPath)...")
+
+        guard let url = URL(string: "file://\(outputPath)") else {
+            return
+        }
+
+        try gpxDocument.description.write(to: url, atomically: true, encoding: .utf8)
     }
 }
