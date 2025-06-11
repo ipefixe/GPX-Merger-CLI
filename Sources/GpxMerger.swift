@@ -148,7 +148,7 @@ struct GpxMerger: ParsableCommand {
         }
 
         let gpxToMerge = gpxDocuments.dropFirst()
-        if gpxToMerge.count <= 1 {
+        if gpxToMerge.count < 1 {
             throw MergerError.oneFileToMerge
         }
 
