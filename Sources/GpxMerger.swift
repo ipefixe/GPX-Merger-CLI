@@ -102,7 +102,7 @@ struct GpxMerger: ParsableCommand {
     // MARK: Private methods
 
     private func readData(from paths: [String]) throws -> [Data] {
-        print("Read data from GPX files...")
+        print("Read data from GPX files...\n  - \(paths.joined(separator: "\n  - "))")
 
         let urls = paths.compactMap { URL(string: "file://\($0)") }
         if urls.count != paths.count {
