@@ -2,9 +2,7 @@
 
 My need was to merge commuting's activities (velotaf in french), to have a cleaner Strava account and to spam the feed less.
 
-Note: Specifically for Strava, it doesn't correctly take into account activities that are discontinuous in time and space. In time, it's not particularly problematic, the information is still detectable in the activity. But for the discontinuous in space, it will connect (in a straight line) the different segments and it counts this additional connection.
-
-So it's worth merging activities that have identical (or very close) start and finish points, otherwise it becomes misleading and false.
+So it's worth merging activities that have identical (or very close) start and finish points, otherwise it becomes misleading.
 
 ## 💻 Usage
 
@@ -28,23 +26,29 @@ There is no need to check that you are adding them in chronological order. They 
 ## 👀 Example
 
 ```
-swift run GPXMergerCLI ~/Desktop/marche-3.gpx ~/Desktop/marche-2.gpx ~/Desktop/marche-4.gpx ~/Desktop/marche-1.gpx -o ~/Desktop/ma_marche.gpx
+swift run GPXMergerCLI ~/Downloads/*.gpx -o ~/Desktop/vandale.gpx
 
-   ____   ____   __  __    __  __
-  / ___| |  _ \  \ \/ /   |  \/  |   ___   _ __    __ _    ___   _ __
+   ____   ____   __  __    __  __                                     
+  / ___| |  _ \  \ \/ /   |  \/  |   ___   _ __    __ _    ___   _ __ 
  | |  _  | |_) |  \  /    | |\/| |  / _ \ | '__|  / _` |  / _ \ | '__|
- | |_| | |  __/   /  \    | |  | | |  __/ | |    | (_| | |  __/ | |
-  \____| |_|     /_/\_\   |_|  |_|  \___| |_|     \__, |  \___| |_|
-                                                  |___/
+ | |_| | |  __/   /  \    | |  | | |  __/ | |    | (_| | |  __/ | |   
+  \____| |_|     /_/\_\   |_|  |_|  \___| |_|     \__, |  \___| |_|   
+                                                  |___/               
 Read data from GPX files...
-Parse GPX data...
+  - /Users/ipefixe/Downloads/Marche_de_nuit.gpx
+  - /Users/ipefixe/Downloads/Marche_en_soirée.gpx
+  - /Users/ipefixe/Downloads/Marche_le_midi.gpx
 Parse GPX data...
 Parse GPX data...
 Parse GPX data...
 Merge GPX documents...
-Write merged GPX to file /Users/ipefixe/Desktop/ma_marche.gpx...
+Write merged GPX to file /Users/ipefixe/Desktop/vandale.gpx...
 ✅ FINISHED
 ```
+<details>
+  <summary>Vandale?</summary>
+    Vandale is the name of my dog.
+</details>
 
 ## ✅ TODO
 
